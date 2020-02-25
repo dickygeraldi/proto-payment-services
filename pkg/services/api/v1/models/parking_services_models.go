@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"proto-parking-services/pkg/services/api/v1/global"
+	"strconv"
 	"time"
 )
 
@@ -104,10 +105,14 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		qrContent = ""
 	} else {
 		url := os.Getenv("URL_QREN")
+		timeTransaction, _ := strconv.Atoi(timeDiff)
+
+		nominalTransaction := timeTransaction * 2000
+
 		body := &global.Qren{
 			MerchantApiKey: os.Getenv("API_KEY"),
 			InvoiceName:    invoiceId,
-			Nominal:        "2000",
+			Nominal:        string(nominalTransaction),
 			StaticQR:       "0",
 			QrGaruda:       "1",
 		}
