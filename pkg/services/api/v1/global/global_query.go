@@ -149,7 +149,7 @@ func GenerateQueryParking(queryParams QueryParams) string {
 	query := dqb.And(
 		dqb.NewExp("platNo", "=", queryParams["platNo"]),
 		dqb.NewExp("status", "=", 0),
-	).BindSql("select count(*) as dataParking from \"parkingData\"")
+	).BindSql("select count(*) as dataParking from \"dataParking\"")
 
 	return query
 }
