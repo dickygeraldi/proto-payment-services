@@ -79,7 +79,7 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 // Function for parking validation
 func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, status, qrContent string) {
 	var invoiceId, enteredDate string
-	layout := "2020-02-25 15:53:13.540862886 +0000 UTC m=+22.509699672"
+	layout := "2020-02-25 15:53:13"
 
 	// Checking get invoice and enteredDate
 	checkInvoice := global.GenerateQueryParkingData(map[string]string{
