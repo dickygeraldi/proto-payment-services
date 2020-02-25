@@ -46,7 +46,6 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 	checkPlatNo := global.GenerateQueryParking(map[string]string{
 		"platNo": platNo,
 	})
-	fmt.Println(checkPlatNo)
 
 	rows := connection.QueryRowContext(ctx, checkPlatNo)
 	err := rows.Scan(&dataParking)
@@ -101,10 +100,16 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		status = "Gagal"
 		qrContent = ""
 	} else {
+		var nominalTransaction int
 		url := os.Getenv("URL_QREN")
 		timeTransaction, _ := strconv.Atoi(timeDiff)
 
-		nominalTransaction := timeTransaction * 2000
+		if timeTransaction >= 2 {
+			nominalTransaction = (timeTransaction-1)*1000 + 2000
+		} else {
+			nominalTransaction = 2000
+		}
+
 		transaksi := strconv.Itoa(nominalTransaction)
 
 		body := &global.Qren{
