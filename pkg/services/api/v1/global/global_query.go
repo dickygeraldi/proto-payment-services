@@ -158,10 +158,13 @@ func GenerateQueryParking(queryParams QueryParams) string {
 func GenerateQueryParkingData(queryParams QueryParams) string {
 	var dqb DynamicQueryBuilder
 
+	sql := fmt.Sprintf(`SELECT "invoiceId", DATE_PART('day', '%s'::timestamp - "enteredDate"::timestamp) * 24 + 
+	DATE_PART('hour', '%s'::timestamp - 'enteredDate'::timestamp) from "dataParking"`, queryParams["dateTime"], queryParams["dateTime"])
+
 	query := dqb.And(
 		dqb.NewExp("\"platNo\"", "=", queryParams["platNo"]),
 		dqb.NewExp("\"status\"", "=", "PENDING"),
-	).BindSql(`SELECT "invoiceId", "enteredDate" from "dataParking"`)
+	).BindSql(sql)
 
 	return query
 }

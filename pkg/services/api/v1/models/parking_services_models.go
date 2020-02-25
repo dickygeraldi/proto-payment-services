@@ -83,11 +83,11 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 // Function for parking validation
 func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, status, qrContent string) {
 	var invoiceId, enteredDate string
-	layout := "2006-01-02 15:04"
 
 	// Checking get invoice and enteredDate
 	checkInvoice := global.GenerateQueryParkingData(map[string]string{
-		"platNo": platNo,
+		"platNo":   platNo,
+		"dateTime": timeRequest.Format("2006-01-02 15:04"),
 	})
 
 	fmt.Println(checkInvoice)
@@ -101,17 +101,6 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		status = "Gagal"
 		qrContent = ""
 	} else {
-		t, err := time.Parse(layout, enteredDate)
-		timeRequest.Format("2006-01-02 15:04")
-
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		fmt.Println(t, timeRequest)
-		diff := timeRequest.Sub(t)
-
-		fmt.Println(diff)
 		url := os.Getenv("URL_QREN")
 		body := &global.Qren{
 			MerchantApiKey: os.Getenv("API_KEY"),
