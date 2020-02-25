@@ -133,7 +133,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 
 		defer res.Body.Close()
 
-		if res.Status == "200" {
+		if res.StatusCode == 200 {
 			body, _ := ioutil.ReadAll(res.Body)
 
 			code = "00"
