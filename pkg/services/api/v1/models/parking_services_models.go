@@ -83,7 +83,7 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 
 // Function for parking validation
 func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, status, qrContent string) {
-	var invoiceId, enteredDate string
+	var invoiceId string
 	var timeDiff string
 
 	// Checking get invoice and enteredDate
@@ -95,7 +95,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 	fmt.Println(checkInvoice)
 
 	rows := connection.QueryRowContext(ctx, checkInvoice)
-	err := rows.Scan(&invoiceId, &enteredDate, &timeDiff)
+	err := rows.Scan(&invoiceId, &timeDiff)
 	fmt.Println(timeDiff)
 	if err != nil {
 		fmt.Println(err)
