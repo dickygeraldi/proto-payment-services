@@ -42,6 +42,7 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 	checkPlatNo := global.GenerateQueryParking(map[string]string{
 		"platNo": platNo,
 	})
+	fmt.Println(checkPlatNo)
 
 	rows := connection.QueryRowContext(ctx, checkPlatNo)
 	err := rows.Scan(&dataParking)
@@ -84,6 +85,8 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 	checkInvoice := global.GenerateQueryParkingData(map[string]string{
 		"platNo": platNo,
 	})
+
+	fmt.Println(checkInvoice)
 
 	rows := connection.QueryRowContext(ctx, checkInvoice)
 	err := rows.Scan(&invoiceId, &enteredDate)
