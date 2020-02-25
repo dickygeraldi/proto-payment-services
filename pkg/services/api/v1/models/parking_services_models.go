@@ -1,10 +1,14 @@
 package models
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net/http"
+	"os"
 	"proto-parking-services/pkg/services/api/v1/global"
 	"time"
 )
@@ -107,12 +111,26 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		diff := timeRequest.Sub(t)
 
 		fmt.Println(diff)
-		// url := os.Getenv("URL_QREN")
-		// body := &global.Qren{
-		// 	MerchantApiKey: os.Getenv("API_KEY"),
-		// 	InvoiceName: invoiceId,
-		// 	Nominal: ,
+		url := os.Getenv("URL_QREN")
+		body := &global.Qren{
+			MerchantApiKey: os.Getenv("API_KEY"),
+			InvoiceName:    invoiceId,
+			Nominal:        "2000",
+			StaticQR:       "0",
+			QrGaruda:       "1",
+		}
 
+		buf := new(bytes.Buffer)
+		json.NewEncoder(buf).Encode(body)
+		req, _ := http.NewRequest("POST", url, buf)
+
+		client := &http.Client{}
+		res, _ := client.Do(req)
+		defer res.Body.Close()
+
+		fmt.Println("response Status:", res.Status)
+		// Print the body to the stdout
+		fmt.Println(res.Body)
 	}
 
 	return code, message, status, qrContent

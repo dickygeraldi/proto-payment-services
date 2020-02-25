@@ -52,7 +52,7 @@ type Qren struct {
 	Nominal        string `json:"nominal"`
 	StaticQR       string `json:"staticQR"`
 	InvoiceName    string `json:"invoiceName"`
-	qrGaruda       string `json:"qrGaruda"`
+	QrGaruda       string `json:"qrGaruda"`
 }
 
 // New returns a new Config struct
