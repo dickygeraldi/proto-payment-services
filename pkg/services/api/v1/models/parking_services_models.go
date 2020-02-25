@@ -95,6 +95,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 
 	rows := connection.QueryRowContext(ctx, checkInvoice)
 	err := rows.Scan(&invoiceId, &enteredDate, &timeDiff)
+	fmt.Println(timeDiff)
 	if err != nil {
 		fmt.Println(err)
 		code = "05"
