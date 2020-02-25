@@ -35,7 +35,7 @@ func getRandomString() string {
 }
 
 // Function for register account
-func ParkingRegistration(platNo string, timeRequest string, connection *sql.DB, ctx context.Context) (code, message, statusMessage, invoice, waktu, status string) {
+func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, statusMessage, invoice, waktu, status string) {
 	var dataParking int
 
 	// Checking platNo
@@ -53,14 +53,14 @@ func ParkingRegistration(platNo string, timeRequest string, connection *sql.DB, 
 	if dataParking >= 1 {
 		code = "04"
 		statusMessage = "Data sudah ada di database"
-		message = platNo + " sudah terdaftar parkir pada " + timeRequest
+		message = platNo + " sudah terdaftar parkir pada " + timeRequest.String()
 	} else {
 		invoice = getRandomString()
 		message = "Transaksi berhasil diproses"
 		code = "00"
 		status = "PENDING"
 		statusMessage = "Data berhasil diproses"
-		waktu = timeRequest
+		waktu = timeRequest.String()
 
 		go func() {
 			sql := `INSERT INTO "dataParking" ("invoiceId", "merchantId", "platNo", "enteredDate", "status") VALUES ($1, $2, $3, $4, $5)`
@@ -77,9 +77,9 @@ func ParkingRegistration(platNo string, timeRequest string, connection *sql.DB, 
 }
 
 // Function for parking validation
-func ValidationParking(platNo string, timeRequest string, connection *sql.DB, ctx context.Context) (code, message, status, qrContent string) {
+func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, status, qrContent string) {
 	var invoiceId, enteredDate string
-	layout := "2006-01-02T15:04:05.000Z"
+	layout := "2020-02-25 15:53:13.540862886 +0000 UTC m=+22.509699672"
 
 	// Checking get invoice and enteredDate
 	checkInvoice := global.GenerateQueryParkingData(map[string]string{
@@ -97,15 +97,14 @@ func ValidationParking(platNo string, timeRequest string, connection *sql.DB, ct
 		status = "Gagal"
 		qrContent = ""
 	} else {
-		t, err := time.Parse(enteredDate, layout)
-		timeRequest2, _ := time.Parse(timeRequest, layout)
+		t, err := time.Parse(layout, enteredDate)
 
 		if err != nil {
 			fmt.Println(err)
 		}
 
 		fmt.Println(t, timeRequest)
-		diff := timeRequest2.Sub(t)
+		diff := timeRequest.Sub(t)
 
 		fmt.Println(diff)
 		// url := os.Getenv("URL_QREN")
