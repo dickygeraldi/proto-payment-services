@@ -108,7 +108,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		timeTransaction, _ := strconv.Atoi(timeDiff)
 
 		nominalTransaction := timeTransaction * 2000
-
+		fmt.Println(nominalTransaction)
 		body := &global.Qren{
 			MerchantApiKey: os.Getenv("API_KEY"),
 			InvoiceName:    invoiceId,
