@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package v1;
+
+import "google/api/annotations.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    info: {
+        title: "Parking-services";
+        version: "1.0";
+        contact: {
+            name: "Parking-services";
+            url: "https://github.com/dickygeraldi/proto-parking-services";
+            email: "dickygeraldi@gmail.com";
+        };
+    };
+    
+    schemes: HTTP;
+    consumes: "application/json";
+    produces: "application/json";
+    responses: {
+		key: "404";
+		value: {
+			description: "Returned when the resource does not exist.";
+			schema: {
+				json_schema: {
+					type: STRING;
+				}
+			}
+		}
+	}
+};
+
+message RegisterParkingRequest {
+    string api = 1;
+    string platNo = 2;
+}
+
+message RegisterParkingResponse {
+    string code = 1;
+    string status = 2;
+    string message = 3;
+    RegisterParkingData data = 4;
+}
+
+message RegisterParkingData {
+    string statusParking = 1;
+    string invoiceNo = 2;
+    string enteredDate = 3;
+}
+
+message ValidationParkingResponse {
+    string code = 1;
+    string status = 2;
+    string message = 3;
+    ValidationParkingData data = 4;
+}
+
+message ValidationParkingData {
+    string qrContent = 1;
+}
+
+service ParkingServices {
+    rpc RegisterParkingServices(RegisterParkingRequest) returns (RegisterParkingResponse) {
+        option(google.api.http) = {
+            post: "/v1/parking-services/register-parking"
+            body: "*"
+        };
+    }
+
+    rpc ParkingValidationServices(RegisterParkingRequest) returns (ValidationParkingResponse) {
+        option(google.api.http) = {
+            post: "/v1/parking-services/validation-parking"
+            body: "*"
+        };
+    }
+}

@@ -1,0 +1,162 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "user-services",
+    "version": "1.0",
+    "contact": {
+      "name": "user-services",
+      "url": "https://github.com/dickygeraldi/proto-user-services",
+      "email": "dickygeraldi@gmail.com"
+    }
+  },
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/percobaan": {
+      "post": {
+        "operationId": "DataCoba",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DataResponse"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "type": "string",
+              "format": "string"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1DataRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserServices"
+        ]
+      }
+    },
+    "/v1/user-services/register-account-harvesting": {
+      "post": {
+        "operationId": "RegisterAccount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RegisterAccountResponse"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "type": "string",
+              "format": "string"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RegisterAccountRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserServices"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "v1DataRequest": {
+      "type": "object",
+      "properties": {
+        "hello": {
+          "type": "string"
+        }
+      }
+    },
+    "v1DataResponse": {
+      "type": "object",
+      "properties": {
+        "output": {
+          "type": "string"
+        }
+      }
+    },
+    "v1DataResponseAccount": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "isActive": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "loggedTime": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RegisterAccountRequest": {
+      "type": "object",
+      "properties": {
+        "api": {
+          "type": "string"
+        },
+        "numberPhone": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RegisterAccountResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/v1DataResponseAccount"
+        }
+      }
+    }
+  }
+}
