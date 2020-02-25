@@ -161,7 +161,7 @@ func GenerateQueryParkingData(queryParams QueryParams) string {
 	query := dqb.And(
 		dqb.NewExp("platNo", "=", queryParams["platNo"]),
 		dqb.NewExp("status", "=", "PENDING"),
-	).BindSql(`SELECT "invoiceNo", "enteredDate" from "dataParking"`)
+	).BindSql(`SELECT "invoiceId", "enteredDate" from "dataParking"`)
 
 	return query
 }
