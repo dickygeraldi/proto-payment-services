@@ -57,14 +57,14 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 	if dataParking >= 1 {
 		code = "04"
 		statusMessage = "Data sudah ada di database"
-		message = platNo + " sudah terdaftar parkir pada " + timeRequest.String()
+		message = platNo + " sudah terdaftar parkir pada " + timeRequest.Format("2020-02-25 15:53:13")
 	} else {
 		invoice = getRandomString()
 		message = "Transaksi berhasil diproses"
 		code = "00"
 		status = "PENDING"
 		statusMessage = "Data berhasil diproses"
-		waktu = timeRequest.String()
+		waktu = timeRequest.Format("2020-02-25 15:53:13")
 
 		go func() {
 			sql := `INSERT INTO "dataParking" ("invoiceId", "merchantId", "platNo", "enteredDate", "status") VALUES ($1, $2, $3, $4, $5)`
@@ -102,6 +102,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		qrContent = ""
 	} else {
 		t, err := time.Parse(layout, enteredDate)
+		timeRequest.Format("2020-02-25 15:53:13")
 
 		if err != nil {
 			fmt.Println(err)
