@@ -142,7 +142,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 				c := make(map[string]interface{})
 				json.Unmarshal([]byte(string(body)), &c)
 
-				sql := fmt.Sprintf(`UPDATE "dataParking" set "qrenInvoiceId" = $1 where "invoiceId" = $2`)
+				sql := fmt.Sprintf(`UPDATE "dataParking" set "qreninvoiceid" = $1 where "invoiceId" = $2`)
 
 				_, err := connection.Query(sql, c["invoiceId"], invoiceId)
 
