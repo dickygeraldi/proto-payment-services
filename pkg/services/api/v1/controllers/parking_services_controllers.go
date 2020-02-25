@@ -98,9 +98,9 @@ func (s *parkingServices) ParkingValidationServices(ctx context.Context, req *v1
 	}, nil
 }
 
-// Unirest.setTimeouts(0, 0);
-// HttpResponse<String> response = Unirest.post("https://qren-api.tmoney.co.id/paybyqr/createinvoice/")
-//   .header("Content-Type", "application/json")
-//   .header("Authorization", "Basic dG1vbmV5OmZmODY2ZjViNjE1NGJiYjdkOTc4ZTUyNDNiNDkzMjBiMGQxYWQ2N2M=")
-//   .body("{\n\t\"merchantApiKey\": \"195255222708\",\n\t\"nominal\": \"1234\",\n\t\"staticQR\": \"0\",\n\t\"invoiceName\": \"TESTING\",\n\t\"qrGaruda\": \"1\" \n}")
-//   .asString();
+Unirest.setTimeouts(0, 0);
+HttpResponse<String> response = Unirest.post("https://qren-api.tmoney.co.id/paybyqr/createinvoice/")
+  .header("Content-Type", "application/json")
+  .header("Authorization", "Basic dG1vbmV5OmZmODY2ZjViNjE1NGJiYjdkOTc4ZTUyNDNiNDkzMjBiMGQxYWQ2N2M=")
+  .body("{\n\t\"merchantApiKey\": \"195255222708\",\n\t\"nominal\": \"1234\",\n\t\"staticQR\": \"0\",\n\t\"invoiceName\": \"TESTING\",\n\t\"qrGaruda\": \"1\" \n}")
+  .asString();
