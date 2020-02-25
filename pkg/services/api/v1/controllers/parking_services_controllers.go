@@ -36,7 +36,7 @@ func (s *parkingServices) CheckApi(api string) error {
 
 // Func percobaan header
 func (s *parkingServices) RegisterParkingServices(ctx context.Context, req *v1.RegisterParkingRequest) (*v1.RegisterParkingResponse, error) {
-	timeRequest := time.Now().Format("2006-01-02 15:04:05")
+	timeRequest := time.Now()
 	data, _ := peer.FromContext(ctx)
 	var code, status, message, invoiceNo, enteredDate, statusParking string
 
@@ -69,31 +69,38 @@ func (s *parkingServices) RegisterParkingServices(ctx context.Context, req *v1.R
 
 // Func percobaan header
 func (s *parkingServices) ParkingValidationServices(ctx context.Context, req *v1.RegisterParkingRequest) (*v1.ValidationParkingResponse, error) {
-	// timeRequest := time.Now().Format("2006-01-02 15:04:05")
-	// data, _ := peer.FromContext(ctx)
-	// var code, status, message, qrContent string
+	timeRequest := time.Now()
+	data, _ := peer.FromContext(ctx)
+	var code, status, message, qrContent string
 
-	// message, statusValidation := validation.ParkingRegistration(req.Api, req.PlatNo, data.Addr.String(), timeRequest)
+	message, statusValidation := validation.ParkingRegistration(req.Api, req.PlatNo, data.Addr.String(), timeRequest)
 
-	// if statusValidation == false {
-	// 	code = "05"
-	// 	status = "Validasi gagal"
-	// 	message = "Data harus diisi"
-	// } else {
-	// 	if err := s.CheckApi(req.Api); err != nil {
-	// 		return nil, err
-	// 	} else {
-	// 		status = "Transaksi berhasil di proses"
-	// 		code, message, status, qrContent = models.ValidationParking(req.PlatNo, timeRequest, s.db, ctx)
-	// 	}
-	// }
+	if statusValidation == false {
+		code = "05"
+		status = "Validasi gagal"
+		message = "Data harus diisi"
+	} else {
+		if err := s.CheckApi(req.Api); err != nil {
+			return nil, err
+		} else {
+			status = "Transaksi berhasil di proses"
+			code, message, status, qrContent = models.ValidationParking(req.PlatNo, timeRequest, s.db, ctx)
+		}
+	}
 
 	return &v1.ValidationParkingResponse{
-		Message: "message",
-		Code:    "code",
-		Status:  "status",
+		Message: message,
+		Code:    code,
+		Status:  status,
 		Data: &v1.ValidationParkingData{
-			QrContent: "qrContent",
+			QrContent: qrContent,
 		},
 	}, nil
 }
+
+Unirest.setTimeouts(0, 0);
+HttpResponse<String> response = Unirest.post("https://qren-api.tmoney.co.id/paybyqr/createinvoice/")
+  .header("Content-Type", "application/json")
+  .header("Authorization", "Basic dG1vbmV5OmZmODY2ZjViNjE1NGJiYjdkOTc4ZTUyNDNiNDkzMjBiMGQxYWQ2N2M=")
+  .body("{\n\t\"merchantApiKey\": \"195255222708\",\n\t\"nominal\": \"1234\",\n\t\"staticQR\": \"0\",\n\t\"invoiceName\": \"TESTING\",\n\t\"qrGaruda\": \"1\" \n}")
+  .asString();

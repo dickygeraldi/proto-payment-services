@@ -148,8 +148,20 @@ func GenerateQueryParking(queryParams QueryParams) string {
 
 	query := dqb.And(
 		dqb.NewExp("platNo", "=", queryParams["platNo"]),
-		dqb.NewExp("status", "=", 0),
+		dqb.NewExp("status", "=", "PENDING"),
 	).BindSql("select count(*) as dataParking from \"dataParking\"")
+
+	return query
+}
+
+// Query for checking data parking
+func GenerateQueryParkingData(QueryParams QueryParams) string {
+	var dqb DynamicQueryBuilder
+
+	query := dqb.And(
+		dqb.NewExp("platNo", "=", queryParams["platNo"]),
+		dqb.NewExp("status", "=", "PENDING"),
+	).BindSql(`SELECT "invoiceNo", "enteredDate" from "dataParking"`)
 
 	return query
 }

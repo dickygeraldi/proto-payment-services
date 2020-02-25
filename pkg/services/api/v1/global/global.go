@@ -46,6 +46,15 @@ type Configuration struct {
 	KeyAes     string
 }
 
+// Request to QREN
+type Qren struct {
+	MerchantApiKey string `json:"merchantApiKey"`
+	Nominal        string `json:"nominal"`
+	StaticQR       string `json:"staticQR"`
+	InvoiceName    string `json:"invoiceName"`
+	qrGaruda       string `json:"qrGaruda"`
+}
+
 // New returns a new Config struct
 func New() *Configuration {
 	return &Configuration{
