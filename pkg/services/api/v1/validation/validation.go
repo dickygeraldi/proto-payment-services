@@ -12,7 +12,7 @@ var re = regexp.MustCompile("select|insert|update|alter|delete")
 func ParkingRegistration(api, platNo, dataIp string, dateTime time.Time) (string, bool) {
 	if api != "" && platNo != "" {
 		if re.MatchString(api) == true || re.MatchString(platNo) == true {
-			go logging.SetLogging("Parking Request", dataIp, "SQL Injection", "Warning message", "warning", "SQL Injection in this request", dateTime)
+			go logging.SetLogging("Parking Request", dataIp, "SQL Injection", "Warning message", "warning", "SQL Injection in this request", dateTime.String())
 			return "Coba lagi nanti, transaksi di pending", false
 		} else {
 			return "", true
