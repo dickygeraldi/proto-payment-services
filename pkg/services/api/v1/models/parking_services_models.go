@@ -124,7 +124,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		fmt.Println(buf.String())
 		req, _ := http.NewRequest("POST", url, buf)
 		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add("Authorization", "basic "+os.Getenv("AUTH_QREN"))
+		req.Header.Add("Authorization", "Basic "+os.Getenv("AUTH_QREN"))
 		fmt.Println(buf)
 
 		client := &http.Client{}
