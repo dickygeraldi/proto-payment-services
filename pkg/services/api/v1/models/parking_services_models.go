@@ -88,6 +88,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 	rows := connection.QueryRowContext(ctx, checkInvoice)
 	err := rows.Scan(&invoiceId, &enteredDate)
 	if err != nil {
+		fmt.Println(err)
 		code = "05"
 		message = "Plat Nomor tidak ditemukan"
 		status = "Gagal"
