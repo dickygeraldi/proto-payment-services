@@ -83,6 +83,7 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 // Function for parking validation
 func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, status, qrContent string) {
 	var invoiceId, enteredDate string
+	var timeDiff int
 
 	// Checking get invoice and enteredDate
 	checkInvoice := global.GenerateQueryParkingData(map[string]string{
@@ -93,7 +94,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 	fmt.Println(checkInvoice)
 
 	rows := connection.QueryRowContext(ctx, checkInvoice)
-	err := rows.Scan(&invoiceId, &enteredDate)
+	err := rows.Scan(&invoiceId, &enteredDate, &timeDiff)
 	if err != nil {
 		fmt.Println(err)
 		code = "05"
