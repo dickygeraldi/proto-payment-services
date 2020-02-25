@@ -36,7 +36,7 @@ func (s *parkingServices) CheckApi(api string) error {
 
 // Func percobaan header
 func (s *parkingServices) RegisterParkingServices(ctx context.Context, req *v1.RegisterParkingRequest) (*v1.RegisterParkingResponse, error) {
-	timeRequest := time.Now()
+	timeRequest := time.Now().Format("2006-01-02 15:04:05")
 	data, _ := peer.FromContext(ctx)
 	var code, status, message, invoiceNo, enteredDate, statusParking string
 
@@ -69,7 +69,7 @@ func (s *parkingServices) RegisterParkingServices(ctx context.Context, req *v1.R
 
 // Func percobaan header
 func (s *parkingServices) ParkingValidationServices(ctx context.Context, req *v1.RegisterParkingRequest) (*v1.ValidationParkingResponse, error) {
-	timeRequest := time.Now()
+	timeRequest := time.Now().Format("2006-01-02 15:04:05")
 	data, _ := peer.FromContext(ctx)
 	var code, status, message, qrContent string
 
