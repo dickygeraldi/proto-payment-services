@@ -6,8 +6,6 @@ import (
 )
 
 var re = regexp.MustCompile("select|insert|update|alter|delete")
-var digitCheck = regexp.MustCompile(`^[0-9]+$`)
-var checkUsername = regexp.MustCompile("^[a-z0-9]+(?:_[a-z0-9]+)*$")
 
 // Function for validation user services request
 func ParkingRegistration(api, platNo, dataIp, dateTime string) (string, bool) {
