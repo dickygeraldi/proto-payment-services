@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -121,6 +122,8 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		buf := new(bytes.Buffer)
 		json.NewEncoder(buf).Encode(body)
 		req, _ := http.NewRequest("POST", url, buf)
+		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add("Authorization", "basic "+os.Getenv("AUTH_QREN"))
 
 		client := &http.Client{}
 		res, e := client.Do(req)
@@ -131,8 +134,9 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		defer res.Body.Close()
 
 		fmt.Println("response Status:", res.Status)
-		// Print the body to the stdout
-		fmt.Println(res.Body)
+		bodyData, _ := ioutil.ReadAll(res.Body)
+
+		fmt.Println(bodyData)
 	}
 
 	return code, message, status, qrContent
