@@ -123,7 +123,11 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		req, _ := http.NewRequest("POST", url, buf)
 
 		client := &http.Client{}
-		res, _ := client.Do(req)
+		res, e := client.Do(req)
+		if e != nil {
+			fmt.Println(e)
+		}
+
 		defer res.Body.Close()
 
 		fmt.Println("response Status:", res.Status)
