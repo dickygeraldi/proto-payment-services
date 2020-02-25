@@ -62,9 +62,9 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 		waktu = timeRequest.String()
 
 		go func() {
-			sql := `INSERT INTO "dataParking" ("invoiceId", "merchantId", "platNo", "enteredDate") VALUES ($1, $2, $3, $4)`
+			sql := `INSERT INTO "dataParking" ("invoiceId", "merchantId", "platNo", "enteredDate", "status") VALUES ($1, $2, $3, $4, $5)`
 
-			_, err := connection.Query(sql, invoice, "MerchantId", platNo, waktu)
+			_, err := connection.Query(sql, invoice, "MerchantId", platNo, waktu, status)
 
 			if err != nil {
 				fmt.Println(err)
