@@ -133,10 +133,19 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 
 		defer res.Body.Close()
 
-		fmt.Println("response Status:", res.Status)
-		bodyData, _ := ioutil.ReadAll(res.Body)
+		if res.Status == "200" {
+			body, _ := ioutil.ReadAll(res.Body)
 
-		fmt.Println(bodyData)
+			code = "00"
+			message = "Generate QR Content berhasil"
+			status = "Transaksi Berhasil"
+			qrContent = string(body)
+		} else {
+			code = "10"
+			message = "Error sistem pada QREN"
+			status = "Transaksi gagal"
+			qrContent = ""
+		}
 	}
 
 	return code, message, status, qrContent
