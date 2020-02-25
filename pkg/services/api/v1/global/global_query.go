@@ -155,7 +155,7 @@ func GenerateQueryParking(queryParams QueryParams) string {
 }
 
 // Query for checking data parking
-func GenerateQueryParkingData(QueryParams QueryParams) string {
+func GenerateQueryParkingData(queryParams QueryParams) string {
 	var dqb DynamicQueryBuilder
 
 	query := dqb.And(

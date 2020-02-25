@@ -35,7 +35,7 @@ func getRandomString() string {
 }
 
 // Function for register account
-func ParkingRegistration(platNo, timeRequest string, connection *sql.DB, ctx context.Context) (code, message, statusMessage, invoice, waktu, status string) {
+func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, statusMessage, invoice, waktu, status string) {
 	var dataParking int
 
 	// Checking platNo
@@ -52,14 +52,14 @@ func ParkingRegistration(platNo, timeRequest string, connection *sql.DB, ctx con
 	if dataParking >= 1 {
 		code = "04"
 		statusMessage = "Data sudah ada di database"
-		message = platNo + " sudah melakukan parkir pada " + timeRequest
+		message = platNo + " sudah melakukan parkir pada "
 	} else {
 		invoice = getRandomString()
 		message = "Transaksi berhasil diproses"
 		code = "00"
 		status = "PENDING"
 		statusMessage = "Data berhasil diproses"
-		waktu = timeRequest
+		waktu = timeRequest.String()
 
 		go func() {
 			sql := `INSERT INTO "dataParking" ("invoiceId", "merchantId", "platNo", "enteredDate") VALUES ($1, $2, $3, $4)`
