@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/joho/godotenv"
 )
 
@@ -13,19 +12,6 @@ func init() {
 	if err := godotenv.Load(); err != nil {
 		fmt.Println("No .env file found")
 	}
-}
-
-// Tokenization for JWT auth
-type MerchantData struct {
-	MerchantId string
-	Password   string
-	jwt.StandardClaims
-}
-
-// Struct message error
-type MessageError struct {
-	Code    string
-	Message string
 }
 
 // structure redis configuration
@@ -66,9 +52,6 @@ func New() *Configuration {
 			PostgrePort:   getEnv("POSTGRESQL_PORT", ""),
 		},
 		ApiVersion: getEnv("API_VERSION", ""),
-		Token:      getEnv("TOKEN", ""),
-		KeyPass:    getEnv("KEY_PASS", ""),
-		KeyAes:     getEnv("KEY_AES", ""),
 	}
 }
 
@@ -79,15 +62,4 @@ func getEnv(key string, defaultVal string) string {
 	}
 
 	return defaultVal
-}
-
-// func to set code and message validation
-func GetMessageError() map[int]MessageError {
-	dataError := make(map[int]MessageError)
-
-	dataError[00] = MessageError{"00", "Processing Success"}
-	dataError[422] = MessageError{"422", "Processing Data Error"}
-	dataError[01] = MessageError{"001", "Processing pending, try again later"}
-
-	return dataError
 }

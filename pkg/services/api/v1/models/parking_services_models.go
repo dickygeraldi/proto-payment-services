@@ -17,13 +17,11 @@ import (
 
 // Set global environment variable
 var conf *global.Configuration
-var messageError map[int]global.MessageError
 var level, cases, fatal string
 
 // Function initialization
 func init() {
 	conf = global.New()
-	messageError = global.GetMessageError()
 }
 
 // Function Generate random number
@@ -93,11 +91,9 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		"dateTime": timeRequest.Format("2006-01-02 15:04"),
 	})
 
-	fmt.Println(checkInvoice)
-
 	rows := connection.QueryRowContext(ctx, checkInvoice)
 	err := rows.Scan(&invoiceId, &timeDiff)
-	fmt.Println(timeDiff)
+
 	if err != nil {
 		fmt.Println(err)
 		code = "05"
@@ -121,11 +117,10 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 
 		buf := new(bytes.Buffer)
 		json.NewEncoder(buf).Encode(body)
-		fmt.Println(buf.String())
+
 		req, _ := http.NewRequest("POST", url, buf)
 		req.Header.Add("Content-Type", "application/json")
 		req.Header.Add("Authorization", "Basic "+os.Getenv("AUTH_QREN"))
-		fmt.Println(buf)
 
 		client := &http.Client{}
 		res, e := client.Do(req)
@@ -142,6 +137,20 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 			message = "Generate QR Content berhasil"
 			status = "Transaksi Berhasil"
 			qrContent = string(body)
+
+			go func() {
+				c := make(map[string]interface{})
+				json.Unmarshal([]byte(string(body)), &c)
+
+				sql := fmt.Sprintf(`UPDATE "dataParking" set "qrenInvoiceId" = $1 where "invoiceId" = $2`)
+
+				_, err := connection.Query(sql, c["invoiceId"], invoiceId)
+
+				if err != nil {
+					fmt.Println(err)
+				}
+			}()
+
 		} else {
 			code = "10"
 			message = "Error sistem pada QREN"
