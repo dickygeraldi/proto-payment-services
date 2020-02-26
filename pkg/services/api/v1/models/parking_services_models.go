@@ -83,6 +83,21 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketio.Client) bool {
 
 	fmt.Println("Listening to channel: ", channel)
+
+	err := c.On(channel, func(h *gosocketio.Channel, args Message) {
+		log.Println("--- Got chat message: ", args)
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
+		log.Println("Connected")
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	res, err := c.Ack("join", channel, time.Second*3)
 
 	if err != nil {
