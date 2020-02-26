@@ -228,8 +228,8 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 			jamMasuk = enteredDate.Format("2006-01-02 15:04")
 			amount = transaksi
 
-			if timeDiff == 0 {
-				timeDiff = 1
+			if timeDiff == "0" {
+				timeDiff = "1"
 			}
 
 			totalJam = timeDiff
