@@ -74,7 +74,7 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	c, err := gosocketio.Dial(
-		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, true),
+		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
 		transport.GetDefaultWebsocketTransport())
 
 	if err != nil {
