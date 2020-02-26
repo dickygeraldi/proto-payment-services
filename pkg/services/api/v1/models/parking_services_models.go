@@ -83,7 +83,7 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 
 	fmt.Println("Listening to channel: ", channel)
 
-	errror := c.On(channel, func(h *gosocketio.Channel, args interface{}) {
+	err = c.On("/"+channel, func(h *gosocketio.Channel, args interface{}) {
 		fmt.Println(fmt.Sprintf("%v", args))
 		mResult := args.(map[string]interface{})
 
@@ -101,7 +101,7 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 		}
 	})
 
-	if errror != nil {
+	if err != nil {
 		fmt.Println(err)
 	}
 
@@ -113,7 +113,7 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 		log.Fatal("Error 2 :", err)
 	}
 
-	defer c.Close()
+	c.Close()
 
 	return true
 }
