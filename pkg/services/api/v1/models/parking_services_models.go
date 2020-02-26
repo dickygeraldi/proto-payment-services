@@ -74,7 +74,7 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	c, err := gosocketio.Dial(
-		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
+		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, true),
 		transport.GetDefaultWebsocketTransport())
 
 	if err != nil {
@@ -83,7 +83,7 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 
 	fmt.Println("Listening to channel: ", channel)
 
-	err = c.On(channel, func(h *gosocketio.Channel, args interface{}) {
+	c.On(channel, func(h *gosocketio.Channel, args interface{}) {
 		fmt.Println(fmt.Sprintf("%v", args))
 		mResult := args.(map[string]interface{})
 
@@ -100,10 +100,6 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 			}
 		}
 	})
-
-	if err != nil {
-		fmt.Println(err)
-	}
 
 	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
 		log.Println("Connected")
