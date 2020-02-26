@@ -82,24 +82,27 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketi
 
 	fmt.Println("Listening to channel: ", channel)
 
-	err := c.On(channel, func(h *gosocketio.Channel, args interface{}) {
-		fmt.Println("Get Listening Channel")
-		fmt.Println(args)
-		fmt.Println(fmt.Sprintf("%v", args))
-		mResult := args.(map[string]interface{})
+	// err := c.On(channel, func(h *gosocketio.Channel, args interface{}) {
+	// 	fmt.Println("Get Listening Channel")
+	// 	fmt.Println(args)
+	// 	fmt.Println(fmt.Sprintf("%v", args))
+	// 	mResult := args.(map[string]interface{})
 
-		if mResult["invoice"] != "" {
-			log.Println("Data Invoice ", mResult["invoice"])
-			log.Println("Data merchantApi : ", mResult["merchantApiKey"])
-			log.Println("Data Status : ", mResult["status"])
+	// 	if mResult["invoice"] != "" {
+	// 		log.Println("Data Invoice ", mResult["invoice"])
+	// 		log.Println("Data merchantApi : ", mResult["merchantApiKey"])
+	// 		log.Println("Data Status : ", mResult["status"])
 
-			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
-			_, err := databaseConnection.Query(sql, mResult["status"], mResult["invoice"])
+	// 		sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
+	// 		_, err := databaseConnection.Query(sql, mResult["status"], mResult["invoice"])
 
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
+	// 		if err != nil {
+	// 			fmt.Println(err)
+	// 		}
+	// 	}
+	// })
+	err := c.On(channel, func(h *gosocketio.Channel, args Message) {
+		log.Println("--- Got chat message: ", args)
 	})
 
 	if err != nil {
