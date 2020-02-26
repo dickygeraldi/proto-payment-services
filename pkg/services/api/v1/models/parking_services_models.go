@@ -75,26 +75,26 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketio.Client) bool {
 
 	fmt.Println("Listening to channel: ", channel)
-	var args interface{}
-	err := c.On(channel, args)
 
-	fmt.Println("Get Listening Channel")
-	fmt.Println(args)
-	fmt.Println(fmt.Sprintf("%v", args))
-	mResult := args.(map[string]interface{})
+	err := c.On(channel, func(h *gosocketio.Channel, args interface{}) {
+		fmt.Println("Get Listening Channel")
+		fmt.Println(args)
+		fmt.Println(fmt.Sprintf("%v", args))
+		mResult := args.(map[string]interface{})
 
-	if mResult["invoice"] != "" {
-		log.Println("Data Invoice ", mResult["invoice"])
-		log.Println("Data merchantApi : ", mResult["merchantApiKey"])
-		log.Println("Data Status : ", mResult["status"])
+		if mResult["invoice"] != "" {
+			log.Println("Data Invoice ", mResult["invoice"])
+			log.Println("Data merchantApi : ", mResult["merchantApiKey"])
+			log.Println("Data Status : ", mResult["status"])
 
-		sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
-		_, err := databaseConnection.Query(sql, mResult["status"], mResult["invoice"])
+			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
+			_, err := databaseConnection.Query(sql, mResult["status"], mResult["invoice"])
 
-		if err != nil {
-			fmt.Println(err)
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
-	}
+	})
 
 	if err != nil {
 		log.Fatal("Error 3 :", err)
