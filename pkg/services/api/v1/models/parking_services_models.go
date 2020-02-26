@@ -147,13 +147,14 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 
 			body, _ := ioutil.ReadAll(res.Body)
 			json.Unmarshal([]byte(string(body)), &c)
+			jam, _ := time.Parse("2006-01-02 15:04", enteredDate)
 
 			code = "00"
 			message = "Generate QR Content berhasil"
 			status = "Transaksi Berhasil"
 			qrContent = fmt.Sprintf("%v", c["content"])
 			jamKeluar = timeRequest.In(location).Format("2006-01-02 15:04")
-			jamMasuk = enteredDate
+			jamMasuk = jam.In(location).Format("2006-01-02 15:04")
 			amount = transaksi
 			totalJam = timeDiff
 
