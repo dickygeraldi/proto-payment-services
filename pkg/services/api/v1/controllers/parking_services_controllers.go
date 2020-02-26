@@ -35,7 +35,7 @@ func socketHandle() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	c, err := gosocketio.Dial(
-		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 3811, false),
+		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
 		transport.GetDefaultWebsocketTransport())
 
 	if err != nil {
