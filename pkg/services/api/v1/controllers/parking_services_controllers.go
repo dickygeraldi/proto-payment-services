@@ -115,7 +115,7 @@ func (s *parkingServices) RegisterParkingServices(ctx context.Context, req *v1.R
 func (s *parkingServices) ParkingValidationServices(ctx context.Context, req *v1.RegisterParkingRequest) (*v1.ValidationParkingResponse, error) {
 	timeRequest := time.Now()
 	data, _ := peer.FromContext(ctx)
-	var code, status, message, qrContent string
+	var code, status, message, qrContent, jamMasuk, jamKeluar, totalJam, amount string
 
 	message, statusValidation := validation.ParkingRegistration(req.Api, req.PlatNo, data.Addr.String(), timeRequest)
 
@@ -128,7 +128,7 @@ func (s *parkingServices) ParkingValidationServices(ctx context.Context, req *v1
 			return nil, err
 		} else {
 			status = "Transaksi berhasil di proses"
-			code, message, status, qrContent = models.ValidationParking(req.PlatNo, timeRequest, s.db, ctx)
+			code, message, status, qrContent, jamMasuk, jamKeluar, totalJam, amount = models.ValidationParking(req.PlatNo, timeRequest, s.db, ctx)
 		}
 	}
 
@@ -138,6 +138,10 @@ func (s *parkingServices) ParkingValidationServices(ctx context.Context, req *v1
 		Status:  status,
 		Data: &v1.ValidationParkingData{
 			QrContent: qrContent,
+			Amount:    amount,
+			JamMasuk:  jamMasuk,
+			JamKeluar: jamKeluar,
+			TotalJam:  totalJam,
 		},
 	}, nil
 }
