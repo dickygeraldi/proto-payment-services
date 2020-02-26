@@ -63,6 +63,8 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 	for {
 		err := connection.On(channel, func(h *gosocketio.Channel, args interface{}) {
 			mResult := args.(map[string]interface{})
+			fmt.Println(fmt.Sprintf("%v", args))
+
 			if mResult["invoice"] != "" {
 				log.Println("Data Invoice ", mResult["invoice"])
 				log.Println("Data merchantApi : ", mResult["merchantApiKey"])
@@ -83,7 +85,7 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 			log.Fatal(err)
 		}
 
-		if data == true && counting <= 3 {
+		if data == true {
 			break
 		} else if data == false && counting <= 3 {
 			time.Sleep(15 * time.Second)
