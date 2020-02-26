@@ -13,9 +13,12 @@ import (
 )
 
 type Message struct {
-	Id      int    `json:"id"`
-	Channel string `json:"channel"`
-	Text    string `json:"text"`
+	MerchantApiKey string `json:"merchantApiKey"`
+	Invoice        string `json:"invoice"`
+	Status         string `json:"status"`
+	Message        string `json:"message"`
+	TrxId          string `json:"trxId"`
+	Amount         string `json:"amount"`
 }
 
 type Channel struct {
@@ -37,19 +40,11 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	c, err := gosocketio.Dial(
-		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, true),
+		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
 		transport.GetDefaultWebsocketTransport())
 
 	if err != nil {
 		log.Fatal("Error 1: ", err)
-	}
-
-	err = c.On("309241010", func(h *gosocketio.Channel, args Message) {
-		log.Println("--- Got chat message: ", args)
-	})
-
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
@@ -59,11 +54,21 @@ func main() {
 		log.Fatal("Error 2 :", err)
 	}
 
-	time.Sleep(1 * time.Second)
-	time.Sleep(60 * time.Second)
-	c.Close()
+	go func() {
+		err = c.On("309241010", func(h *gosocketio.Channel, args Message) {
+			log.Println("--- Got chat message: ", args)
+			log.Println("--- Got Data message: ", args.Invoice)
+			log.Println("--- Got 1 message: ", args.MerchantApiKey)
+			log.Println("--- Got 2 message: ", args.Message)
+			log.Println("--- Got 3 message: ", args.TrxId)
+			log.Println("--- Got 5 message: ", args.Status)
+		})
 
-	log.Println(" [x] Complete")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	defer c.Close()
 
 	if err := cmd.RunServer(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
