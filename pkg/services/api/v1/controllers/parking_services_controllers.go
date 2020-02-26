@@ -3,17 +3,13 @@ package controllers
 import (
 	"context"
 	"database/sql"
-	"log"
 	"os"
 	v1 "proto-parking-services/pkg/api/v1"
 	"proto-parking-services/pkg/services/api/v1/models"
 	"proto-parking-services/pkg/services/api/v1/validation"
-	"runtime"
 
 	"time"
 
-	gosocketio "github.com/graarh/golang-socketio"
-	"github.com/graarh/golang-socketio/transport"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
@@ -22,33 +18,6 @@ import (
 // UserServices implemented on version 1 proto interface
 type parkingServices struct {
 	db *sql.DB
-}
-
-type Message struct {
-	Id      int    `json:"id"`
-	Channel string `json:"channel"`
-	Text    string `json:"text"`
-}
-
-// socket connection handle
-func socketHandle() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	c, err := gosocketio.Dial(
-		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
-		transport.GetDefaultWebsocketTransport())
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = c.On("309241010", func(h *gosocketio.Channel, args Message) {
-		log.Println("--- Got chat message: ", args)
-	})
-
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 // New sending otp services create sending otp service
