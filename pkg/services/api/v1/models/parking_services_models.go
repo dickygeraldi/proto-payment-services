@@ -54,45 +54,69 @@ func HandleSocket() {
 	defer c.Close()
 }
 
+func setInterval(someFunc func(), milliseconds int, async bool, invoice string, connection *sql.DB) chan bool {
+
+	// How often to fire the passed in function
+	// in milliseconds
+	interval := time.Duration(milliseconds) * time.Millisecond
+
+	// Setup the ticket and the channel to signal
+	// the ending of the interval
+	ticker := time.NewTicker(interval)
+	clear := make(chan bool)
+
+	// Put the selection in a go routine
+	// so that the for loop is none blocking
+	go func() {
+		for {
+
+			select {
+			case <-ticker.C:
+				if async {
+					// This won't block
+					go getDataFromChannel(invoice, connection)
+				} else {
+					// This will block
+					someFunc()
+				}
+			case <-clear:
+				ticker.Stop()
+				return
+			}
+
+		}
+	}()
+
+	// We return the channel so we can pass in
+	// a value to it to clear the interval
+	return clear
+
+}
+
 func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 
 	fmt.Println("Listening to channel: ", channel)
 
-	data := false
-	counting := 0
-	for {
-		err := connection.On(channel, func(h *gosocketio.Channel, args interface{}) {
-			mResult := args.(map[string]interface{})
-			fmt.Println(fmt.Sprintf("%v", args))
+	err := connection.On(channel, func(h *gosocketio.Channel, args interface{}) {
+		mResult := args.(map[string]interface{})
+		fmt.Println(fmt.Sprintf("%v", args))
 
-			if mResult["invoice"] != "" {
-				log.Println("Data Invoice ", mResult["invoice"])
-				log.Println("Data merchantApi : ", mResult["merchantApiKey"])
-				log.Println("Data Status : ", mResult["status"])
+		if mResult["invoice"] != "" {
+			log.Println("Data Invoice ", mResult["invoice"])
+			log.Println("Data merchantApi : ", mResult["merchantApiKey"])
+			log.Println("Data Status : ", mResult["status"])
 
-				sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
-				_, err := databaseConnection.Query(sql, mResult["status"], mResult["invoice"])
+			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
+			_, err := databaseConnection.Query(sql, mResult["status"], mResult["invoice"])
 
-				if err != nil {
-					fmt.Println(err)
-				}
-
-				data = true
+			if err != nil {
+				fmt.Println(err)
 			}
-		})
-
-		if err != nil {
-			log.Fatal(err)
 		}
+	})
 
-		if data == true {
-			break
-		} else if data == false && counting <= 3 {
-			time.Sleep(15 * time.Second)
-			counting = counting + 1
-		} else if counting > 3 {
-			break
-		}
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	return true
@@ -253,10 +277,9 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 			}()
 
 			go func() {
-				x := getDataFromChannel(fmt.Sprintf("%v", c["invoiceId"]), connection)
-				if x == true {
-					fmt.Println("Transaksi berhasil diupdate untuk invoice ", fmt.Sprintf("%v", c["invoiceId"]))
-				}
+				setInterval(func() {
+					fmt.Println("Checking for channeling")
+				}, 10000, true, fmt.Sprintf("%v", c["invoiceId"]), connection)
 			}()
 
 		} else {
