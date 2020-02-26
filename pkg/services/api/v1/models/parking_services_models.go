@@ -60,41 +60,38 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 
 	data := false
 	counting := 0
+	for {
+		err := connection.On(channel, func(h *gosocketio.Channel, args interface{}) {
+			mResult := args.(map[string]interface{})
+			if mResult["invoice"] != "" {
+				log.Println("Data Invoice ", mResult["invoice"])
+				log.Println("Data merchantApi : ", mResult["merchantApiKey"])
+				log.Println("Data Status : ", mResult["status"])
 
-	go func() {
-		for {
-			err := connection.On(channel, func(h *gosocketio.Channel, args interface{}) {
-				mResult := args.(map[string]interface{})
-				if mResult["invoice"] != "" {
-					log.Println("Data Invoice ", mResult["invoice"])
-					log.Println("Data merchantApi : ", mResult["merchantApiKey"])
-					log.Println("Data Status : ", mResult["status"])
+				sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
+				_, err := databaseConnection.Query(sql, mResult["status"], mResult["invoice"])
 
-					sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
-					_, err := databaseConnection.Query(sql, mResult["status"], mResult["invoice"])
-
-					if err != nil {
-						fmt.Println(err)
-					}
-
-					data = true
+				if err != nil {
+					fmt.Println(err)
 				}
-			})
 
-			if err != nil {
-				log.Fatal(err)
+				data = true
 			}
+		})
 
-			if data == true && counting <= 3 {
-				break
-			} else if data == false && counting <= 3 {
-				time.Sleep(15 * time.Second)
-				counting = counting + 1
-			} else if counting > 3 {
-				break
-			}
+		if err != nil {
+			log.Fatal(err)
 		}
-	}()
+
+		if data == true && counting <= 3 {
+			break
+		} else if data == false && counting <= 3 {
+			time.Sleep(15 * time.Second)
+			counting = counting + 1
+		} else if counting > 3 {
+			break
+		}
+	}
 
 	return true
 }
