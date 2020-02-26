@@ -101,6 +101,13 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 		}
 	})
 
+	err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
+		log.Fatal("Disconnected")
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
 		log.Println("Connected")
 	})
