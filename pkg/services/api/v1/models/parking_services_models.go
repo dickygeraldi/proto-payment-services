@@ -35,6 +35,15 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 	// How often to fire the passed in function
 	// in milliseconds
 	interval := time.Duration(milliseconds) * time.Millisecond
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	c, err := gosocketio.Dial(
+		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
+		transport.GetDefaultWebsocketTransport())
+
+	if err != nil {
+		log.Fatal("Error 1: ", err)
+	}
 
 	// Setup the ticket and the channel to signal
 	// the ending of the interval
@@ -50,7 +59,7 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 			case <-ticker.C:
 				if async {
 					// This won't block
-					go getDataFromChannel(invoice, connection)
+					go getDataFromChannel(invoice, connection, c)
 				} else {
 					// This will block
 					someFunc()
@@ -69,21 +78,11 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 
 }
 
-func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
-
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	c, err := gosocketio.Dial(
-		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
-		transport.GetDefaultWebsocketTransport())
-
-	if err != nil {
-		log.Fatal("Error 1: ", err)
-	}
+func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketio.Client) bool {
 
 	fmt.Println("Listening to channel: ", channel)
 
-	err = c.On(channel, func(h *gosocketio.Channel, args interface{}) {
+	err := c.On(channel, func(h *gosocketio.Channel, args interface{}) {
 		fmt.Println("Get Listening Channel")
 		fmt.Println(args)
 		fmt.Println(fmt.Sprintf("%v", args))
