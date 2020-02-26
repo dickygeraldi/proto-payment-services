@@ -151,7 +151,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 			code = "00"
 			message = "Generate QR Content berhasil"
 			status = "Transaksi Berhasil"
-			qrContent = fmt.Sprintf("", c["content"])
+			qrContent = fmt.Sprintf("%v", c["content"])
 			jamKeluar = timeRequest.In(location).Format("2006-01-02 15:04")
 			jamMasuk = enteredDate
 			amount = transaksi
