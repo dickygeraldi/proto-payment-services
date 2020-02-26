@@ -180,11 +180,12 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 }
 
 // Function for parking validation
-func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, status, qrContent, jamMasuk, jamKeluar, totalJam, amount string) {
+func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, status, qrContent, jamMasuk, jamKeluar, totalJam, amount, invoiceData string) {
 	var invoiceId string
 	var timeDiff string
 	var enteredDate time.Time
 	location, _ := time.LoadLocation("Asia/Jakarta")
+	var invoiceIdQren string
 
 	// Checking get invoice and enteredDate
 	checkInvoice := global.GenerateQueryParkingData(map[string]string{
@@ -205,6 +206,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		jamMasuk = ""
 		totalJam = ""
 		amount = ""
+		invoiceIdQren = ""
 	} else {
 		var nominalTransaction int
 		url := os.Getenv("URL_QREN")
@@ -254,6 +256,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 			jamKeluar = timeRequest.In(location).Format("2006-01-02 15:04")
 			jamMasuk = enteredDate.Format("2006-01-02 15:04")
 			amount = transaksi
+			invoiceIdQren = fmt.Sprintf("%v", c["invoiceId"])
 
 			if timeDiff == "0" {
 				timeDiff = "1"
@@ -286,5 +289,5 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		}
 	}
 
-	return code, message, status, qrContent, jamMasuk, jamKeluar, totalJam, amount
+	return code, message, status, qrContent, jamMasuk, jamKeluar, totalJam, amount, invoiceIdQren
 }

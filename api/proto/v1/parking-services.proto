@@ -63,6 +63,7 @@ message ValidationParkingData {
     string jamKeluar = 3;
     string totalJam = 4;
     string amount = 5;
+    string invoicrId = 6;
 }
 
 service ParkingServices {
