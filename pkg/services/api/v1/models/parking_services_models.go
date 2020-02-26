@@ -54,7 +54,7 @@ func HandleSocket() {
 	defer c.Close()
 }
 
-func getDataFromChannel(channel string) bool {
+func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 
 	fmt.Println("Listening to channel: ", channel)
 
@@ -69,6 +69,14 @@ func getDataFromChannel(channel string) bool {
 					log.Println("Data Invoice ", mResult["invoice"])
 					log.Println("Data merchantApi : ", mResult["merchantApiKey"])
 					log.Println("Data Status : ", mResult["status"])
+
+					sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
+					_, err := databaseConnection.Query(sql, mResult["status"], mResult["invoice"])
+
+					if err != nil {
+						fmt.Println(err)
+					}
+
 					data = true
 				}
 			})
@@ -246,7 +254,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 			}()
 
 			go func() {
-				x := getDataFromChannel(fmt.Sprintf("%v", c["invoiceId"]))
+				x := getDataFromChannel(fmt.Sprintf("%v", c["invoiceId"]), connection)
 				if x == true {
 					fmt.Println("Transaksi berhasil diupdate untuk invoice ", fmt.Sprintf("%v", c["invoiceId"]))
 				}
