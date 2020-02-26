@@ -56,16 +56,37 @@ func HandleSocket() {
 
 func getDataFromChannel(channel string) bool {
 
-	err := connection.On(channel, func(h *gosocketio.Channel, args interface{}) {
-		mResult := args.(map[string]interface{})
-		log.Println("Data Invoice ", mResult["invoice"])
-		log.Println("Data merchantApi : ", mResult["merchantApiKey"])
-		log.Println("Data Status : ", mResult["status"])
-	})
+	fmt.Println("Listening to channel: ", channel)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	data := false
+	counting := 0
+
+	go func() {
+		for {
+			err := connection.On(channel, func(h *gosocketio.Channel, args interface{}) {
+				mResult := args.(map[string]interface{})
+				if mResult["invoice"] != "" {
+					log.Println("Data Invoice ", mResult["invoice"])
+					log.Println("Data merchantApi : ", mResult["merchantApiKey"])
+					log.Println("Data Status : ", mResult["status"])
+					data = true
+				}
+			})
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if data == true && counting <= 3 {
+				break
+			} else if data == false && counting <= 3 {
+				time.Sleep(15 * time.Second)
+				counting = counting + 1
+			} else if counting > 3 {
+				break
+			}
+		}
+	}()
 
 	return true
 }
@@ -206,6 +227,11 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 			jamKeluar = timeRequest.In(location).Format("2006-01-02 15:04")
 			jamMasuk = enteredDate.Format("2006-01-02 15:04")
 			amount = transaksi
+
+			if timeDiff == 0 {
+				timeDiff = 1
+			}
+
 			totalJam = timeDiff
 
 			go func() {
@@ -220,9 +246,9 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 			}()
 
 			go func() {
-				x := getDataFromChannel(fmt.Sprintf("%v", c["content"]))
+				x := getDataFromChannel(fmt.Sprintf("%v", c["invoiceId"]))
 				if x == true {
-					fmt.Println("Transaksi berhasil diupdate untuk invoice ", fmt.Sprintf("%v", c["content"]))
+					fmt.Println("Transaksi berhasil diupdate untuk invoice ", fmt.Sprintf("%v", c["invoiceId"]))
 				}
 			}()
 
