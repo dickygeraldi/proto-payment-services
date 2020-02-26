@@ -45,6 +45,7 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 	if err != nil {
 		log.Fatal("Error 1: ", err)
 	}
+	defer c.Close()
 
 	// Setup the ticket and the channel to signal
 	// the ending of the interval
@@ -82,30 +83,28 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketio.Client) bool {
 
 	fmt.Println("Listening to channel: ", channel)
-
-	err := c.On("321263002", func(h *gosocketio.Channel, args Message) {
-		fmt.Println("Get Listening Channel")
-		fmt.Println(args)
-		fmt.Println(fmt.Sprintf("%v", args))
-
-		if args.Invoice != "" {
-			log.Println("Data Invoice ", args.Invoice)
-			log.Println("Data Status : ", args.Status)
-
-			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
-			_, err := databaseConnection.Query(sql, args.Status, args.Invoice)
-
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-	})
+	res, err := c.Ack("join", channel, time.Second*3)
 
 	if err != nil {
-		log.Fatal("Error 3 :", err)
+		log.Printf("error: %v", err)
+	} else {
+		log.Printf("result %q", res)
 	}
+	// fmt.Println("Get Listening Channel")
+	// fmt.Println(args)
+	// fmt.Println(fmt.Sprintf("%v", args))
 
-	defer c.Close()
+	// if args.Invoice != "" {
+	// 	log.Println("Data Invoice ", args.Invoice)
+	// 	log.Println("Data Status : ", args.Status)
+
+	// 	sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
+	// 	_, err := databaseConnection.Query(sql, args.Status, args.Invoice)
+
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
+	// }
 
 	return true
 }
