@@ -14,6 +14,11 @@ func init() {
 	}
 }
 
+// Channel socket
+type Channel struct {
+	Channel string `json:"channel"`
+}
+
 // structure redis configuration
 type PostGresql struct {
 	PostgreClient string

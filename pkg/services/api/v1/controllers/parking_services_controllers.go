@@ -3,15 +3,17 @@ package controllers
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
-	"fmt"
-	"net"
+	"log"
 	"os"
 	v1 "proto-parking-services/pkg/api/v1"
 	"proto-parking-services/pkg/services/api/v1/models"
 	"proto-parking-services/pkg/services/api/v1/validation"
+	"runtime"
+
 	"time"
 
+	gosocketio "github.com/graarh/golang-socketio"
+	"github.com/graarh/golang-socketio/transport"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
@@ -22,45 +24,31 @@ type parkingServices struct {
 	db *sql.DB
 }
 
-// socket connection handle
-func socketHandle() {
-	l, err := net.Listen("tcp", os.Getenv("SOCKET_HOST"))
-	if err != nil {
-		fmt.Println("Error listening:", err.Error())
-		os.Exit(1)
-	}
-
-	defer l.Close()
-	for {
-		// listen all incoming message
-		conn, err := l.Accept()
-		if err != nil {
-			fmt.Println("Error accepting: ", err.Error())
-			os.Exit(1)
-		}
-		// Handle connections in a new goroutine.
-		go handleRequest(conn)
-	}
+type Message struct {
+	Id      int    `json:"id"`
+	Channel string `json:"channel"`
+	Text    string `json:"text"`
 }
 
-// Socket handle request
-func handleRequest(conn net.Conn) {
-	buf := make([]byte, 1024)
+// socket connection handle
+func socketHandle() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	_, err := conn.Read(buf)
-	data := make(map[string]interface{})
-
-	json.Unmarshal(buf, &data)
-	fmt.Println(data)
+	c, err := gosocketio.Dial(
+		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 3811, false),
+		transport.GetDefaultWebsocketTransport())
 
 	if err != nil {
-		fmt.Println("Error reading:", err.Error())
+		log.Fatal(err)
 	}
 
-	// Send a response back to person contacting us.
-	conn.Write([]byte("Message received."))
-	// Close the connection when you're done with it.
-	conn.Close()
+	err = c.On("309241010", func(h *gosocketio.Channel, args Message) {
+		log.Println("--- Got chat message: ", args)
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // New sending otp services create sending otp service
