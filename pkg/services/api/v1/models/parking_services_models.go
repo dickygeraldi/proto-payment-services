@@ -76,7 +76,7 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketi
 
 	fmt.Println("Listening to channel: ", channel)
 
-	err := c.On(channel, func(h *gosocketio.Channel, args interface{}) {
+	err := c.On("321263002", func(h *gosocketio.Channel, args interface{}) {
 		fmt.Println("Get Listening Channel")
 		fmt.Println(args)
 		fmt.Println(fmt.Sprintf("%v", args))
