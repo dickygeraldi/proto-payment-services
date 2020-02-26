@@ -7,17 +7,68 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"proto-parking-services/pkg/services/api/v1/global"
+	"runtime"
 	"strconv"
 	"time"
+
+	gosocketio "github.com/graarh/golang-socketio"
+	"github.com/graarh/golang-socketio/transport"
 )
 
 // Set global environment variable
 var conf *global.Configuration
 var level, cases, fatal string
+var connection *gosocketio.Client
+
+type Message struct {
+	Id      int    `json:"id"`
+	Channel string `json:"channel"`
+	Text    string `json:"text"`
+}
+
+func HandleSocket() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	c, err := gosocketio.Dial(
+		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
+		transport.GetDefaultWebsocketTransport())
+
+	if err != nil {
+		log.Fatal("Error 1: ", err)
+	}
+
+	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
+		log.Println("Connected")
+	})
+	if err != nil {
+		log.Fatal("Error 2 :", err)
+	}
+
+	connection = c
+
+	defer c.Close()
+}
+
+func getDataFromChannel(channel string) bool {
+
+	err := connection.On(channel, func(h *gosocketio.Channel, args interface{}) {
+		mResult := args.(map[string]interface{})
+		log.Println("Data Invoice ", mResult["invoice"])
+		log.Println("Data merchantApi : ", mResult["merchantApiKey"])
+		log.Println("Data Status : ", mResult["status"])
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return true
+}
 
 // Function initialization
 func init() {
@@ -159,12 +210,19 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 
 			go func() {
 
-				sql := fmt.Sprintf(`UPDATE "dataParking" set "qreninvoiceid" = $1, "amount" = $2 where "invoiceId" = $3`)
+				sql := fmt.Sprintf(`UPDATE "dataParking" set "qreninvoiceid" = $1, "amount" = $2, "exitDate" = $3 where "invoiceId" = $4`)
 
-				_, err := connection.Query(sql, c["invoiceId"], transaksi, invoiceId)
+				_, err := connection.Query(sql, c["invoiceId"], transaksi, jamKeluar, invoiceId)
 
 				if err != nil {
 					fmt.Println(err)
+				}
+			}()
+
+			go func() {
+				x := getDataFromChannel(fmt.Sprintf("%v", c["content"]))
+				if x == true {
+					fmt.Println("Transaksi berhasil diupdate untuk invoice ", fmt.Sprintf("%v", c["content"]))
 				}
 			}()
 
