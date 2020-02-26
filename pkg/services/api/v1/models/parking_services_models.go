@@ -84,8 +84,8 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 	fmt.Println("Listening to channel: ", channel)
 
 	errror := c.On(channel, func(h *gosocketio.Channel, args interface{}) {
-		mResult := args.(map[string]interface{})
 		fmt.Println(fmt.Sprintf("%v", args))
+		mResult := args.(map[string]interface{})
 
 		if mResult["invoice"] != "" {
 			log.Println("Data Invoice ", mResult["invoice"])
