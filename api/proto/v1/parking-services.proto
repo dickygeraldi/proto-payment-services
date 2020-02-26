@@ -59,6 +59,10 @@ message ValidationParkingResponse {
 
 message ValidationParkingData {
     string qrContent = 1;
+    string jamMasuk = 2;
+    string jamKeluar = 3;
+    string totalJam = 4;
+    string amount = 5;
 }
 
 service ParkingServices {

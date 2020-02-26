@@ -41,6 +41,7 @@ func getRandomString() string {
 // Function for register account
 func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, statusMessage, invoice, waktu, status string) {
 	var dataParking int
+	location, _ := time.LoadLocation("Asia/Jakarta")
 
 	// Checking platNo
 	checkPlatNo := global.GenerateQueryParking(map[string]string{
@@ -56,14 +57,14 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 	if dataParking >= 1 {
 		code = "04"
 		statusMessage = "Data sudah ada di database"
-		message = platNo + " sudah terdaftar parkir pada " + timeRequest.Format("2006-01-02 15:04")
+		message = platNo + " sudah terdaftar parkir pada " + timeRequest.In(location).Format("2006-01-02 15:04")
 	} else {
 		invoice = getRandomString()
 		message = "Transaksi berhasil diproses"
 		code = "00"
 		status = "PENDING"
 		statusMessage = "Data berhasil diproses"
-		waktu = timeRequest.Format("2006-01-02 15:04")
+		waktu = timeRequest.In(location).Format("2006-01-02 15:04")
 
 		go func() {
 			sql := `INSERT INTO "dataParking" ("invoiceId", "merchantId", "platNo", "enteredDate", "status") VALUES ($1, $2, $3, $4, $5)`
@@ -80,18 +81,20 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 }
 
 // Function for parking validation
-func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, status, qrContent string) {
+func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, status, qrContent, jamMasuk, jamKeluar, totalJam, amount string) {
 	var invoiceId string
 	var timeDiff string
+	var enteredDate string
+	location, _ := time.LoadLocation("Asia/Jakarta")
 
 	// Checking get invoice and enteredDate
 	checkInvoice := global.GenerateQueryParkingData(map[string]string{
 		"platNo":   platNo,
-		"dateTime": timeRequest.Format("2006-01-02 15:04"),
+		"dateTime": timeRequest.In(location).Format("2006-01-02 15:04"),
 	})
 
 	rows := connection.QueryRowContext(ctx, checkInvoice)
-	err := rows.Scan(&invoiceId, &timeDiff)
+	err := rows.Scan(&invoiceId, &timeDiff, &enteredDate)
 
 	if err != nil {
 		fmt.Println(err)
@@ -99,6 +102,10 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		message = "Plat Nomor tidak ditemukan"
 		status = "Gagal"
 		qrContent = ""
+		jamKeluar = ""
+		jamMasuk = ""
+		totalJam = ""
+		amount = ""
 	} else {
 		var nominalTransaction int
 		url := os.Getenv("URL_QREN")
@@ -136,16 +143,21 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		defer res.Body.Close()
 
 		if res.StatusCode == 200 {
+			c := make(map[string]interface{})
+
 			body, _ := ioutil.ReadAll(res.Body)
+			json.Unmarshal([]byte(string(body)), &c)
 
 			code = "00"
 			message = "Generate QR Content berhasil"
 			status = "Transaksi Berhasil"
-			qrContent = string(body)
+			qrContent = fmt.Sprintf("", c["content"])
+			jamKeluar = timeRequest.In(location).Format("2006-01-02 15:04")
+			jamMasuk = enteredDate
+			amount = transaksi
+			totalJam = timeDiff
 
 			go func() {
-				c := make(map[string]interface{})
-				json.Unmarshal([]byte(string(body)), &c)
 
 				sql := fmt.Sprintf(`UPDATE "dataParking" set "qreninvoiceid" = $1, "amount" = $2 where "invoiceId" = $3`)
 
@@ -164,5 +176,5 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		}
 	}
 
-	return code, message, status, qrContent
+	return code, message, status, qrContent, jamMasuk, jamKeluar, totalJam, amount
 }

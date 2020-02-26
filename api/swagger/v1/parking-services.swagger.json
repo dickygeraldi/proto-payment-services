@@ -182,6 +182,18 @@
       "properties": {
         "qrContent": {
           "type": "string"
+        },
+        "jamMasuk": {
+          "type": "string"
+        },
+        "jamKeluar": {
+          "type": "string"
+        },
+        "totalJam": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
         }
       }
     },
