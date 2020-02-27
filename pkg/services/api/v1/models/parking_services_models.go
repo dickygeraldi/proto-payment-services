@@ -47,23 +47,17 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 	}
 	defer c.Close()
 
-	// Setup the ticket and the channel to signal
-	// the ending of the interval
 	ticker := time.NewTicker(interval)
 	clear := make(chan bool)
 
-	// Put the selection in a go routine
-	// so that the for loop is none blocking
 	go func() {
 		for {
 
 			select {
 			case <-ticker.C:
 				if async {
-					// This won't block
 					go getDataFromChannel(invoice, connection, c)
 				} else {
-					// This will block
 					someFunc()
 				}
 			case <-clear:
@@ -74,8 +68,6 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 		}
 	}()
 
-	// We return the channel so we can pass in
-	// a value to it to clear the interval
 	return clear
 
 }
@@ -84,8 +76,8 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketi
 
 	fmt.Println("Listening to channel: ", channel)
 
-	err := c.On(channel, func(h *gosocketio.Channel, args Message) {
-		log.Println("--- Got chat message: ", args)
+	err := c.On(channel, func(h *gosocketio.Channel, data interface{}) {
+		fmt.Println(data)
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -121,6 +113,7 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketi
 	// 	}
 	// }
 
+	c.Close()
 	return true
 }
 
