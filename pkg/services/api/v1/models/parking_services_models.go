@@ -76,8 +76,21 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 
 	fmt.Println("Listening to channel: ", channel)
 
-	err = c.On(channel, func(h *gosocketio.Channel, data interface{}) {
-		fmt.Println(data)
+	err = c.On(channel, func(h *gosocketio.Channel, args Message) {
+		fmt.Println(args)
+		fmt.Println(fmt.Sprintf("%v", args))
+
+		if args.Invoice != "" {
+			log.Println("Data Invoice ", args.Invoice)
+			log.Println("Data Status : ", args.Status)
+
+			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
+			_, err := databaseConnection.Query(sql, args.Status, args.Invoice)
+
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -89,50 +102,6 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// fmt.Println("Get Listening Channel")
-	// fmt.Println(args)
-	// fmt.Println(fmt.Sprintf("%v", args))
-
-	// if args.Invoice != "" {
-	// 	log.Println("Data Invoice ", args.Invoice)
-	// 	log.Println("Data Status : ", args.Status)
-
-	// 	sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
-	// 	_, err := databaseConnection.Query(sql, args.Status, args.Invoice)
-
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 	}
-	// }
-
-	c.Close()
-
-	c2, err := gosocketio.Dial(
-		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
-		transport.GetDefaultWebsocketTransport())
-
-	if err != nil {
-		log.Fatal("Error 1: ", err)
-	}
-
-	fmt.Println("Listening to channel: ", channel)
-
-	err = c2.On(channel, func(h *gosocketio.Channel, data interface{}) {
-		fmt.Println(data)
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = c2.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
-		log.Println("Connected")
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	c2.Close()
 
 	return true
 }
