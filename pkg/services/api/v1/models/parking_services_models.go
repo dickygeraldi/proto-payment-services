@@ -89,6 +89,13 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
 			_, err := databaseConnection.Query(sql, args.Status, args.Invoice)
 
+			err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
+				log.Fatal("Disconnected")
+			})
+			if err != nil {
+				log.Fatal(err)
+			}
+
 			c.Close()
 
 			if err != nil {
