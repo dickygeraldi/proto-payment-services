@@ -77,12 +77,7 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 
 									flagging = 1
 									if flagging == 1 {
-										err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
-											log.Fatal("Disconnected")
-										})
-										if err != nil {
-											log.Fatal(err)
-										}
+
 										c.Close()
 										ticker.Stop()
 									}
