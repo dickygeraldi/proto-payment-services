@@ -31,6 +31,10 @@ type Message struct {
 	TrxId   string `json:"trxId"`
 }
 
+type Channel struct {
+	Channel string `json:"channel"`
+}
+
 func setInterval(someFunc func(), milliseconds int, async bool, invoice string, connection *sql.DB) chan bool {
 
 	// How often to fire the passed in function
@@ -84,6 +88,14 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 			}
 			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
 			_, err := databaseConnection.Query(sql, args.Status, args.Invoice)
+
+			log.Println("Acking ", channel)
+			result, err := c.Ack(channel, Channel{channel}, time.Second*5)
+			if err != nil {
+				log.Fatal(err)
+			} else {
+				log.Println("Ack result to "+channel+": ", result)
+			}
 			c.Close()
 
 			if err != nil {
