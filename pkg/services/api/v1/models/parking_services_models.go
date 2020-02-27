@@ -88,13 +88,6 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 			if err != nil {
 				fmt.Println(err)
 			}
-		} else {
-			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
-			_, err := databaseConnection.Query(sql, "SUSPECT", args.Invoice)
-
-			if err != nil {
-				fmt.Println(err)
-			}
 		}
 	})
 	if err != nil {
