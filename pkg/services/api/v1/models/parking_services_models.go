@@ -88,6 +88,7 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB, flagging boo
 		err = c.On(channel, func(h *gosocketio.Channel, args Message) {
 
 			if args.Invoice != "" {
+				fmt.Println("Update database")
 				if args.Status == "0" {
 					args.Status = "PAID"
 				}
