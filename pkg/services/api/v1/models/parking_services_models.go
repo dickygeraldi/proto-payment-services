@@ -89,13 +89,6 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
 			_, err := databaseConnection.Query(sql, args.Status, args.Invoice)
 
-			log.Println("Acking ", channel)
-			result, err := c.Ack(channel, Channel{channel}, time.Second*5)
-			if err != nil {
-				log.Fatal(err)
-			} else {
-				log.Println("Ack result to "+channel+": ", result)
-			}
 			c.Close()
 
 			if err != nil {
