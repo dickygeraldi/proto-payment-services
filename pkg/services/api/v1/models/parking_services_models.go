@@ -101,7 +101,7 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 		log.Fatal(err)
 	}
 
-	c.Close()
+	defer c.Close()
 
 	return true
 }
