@@ -77,15 +77,20 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 	fmt.Println("Listening to channel: ", channel)
 
 	err = c.On(channel, func(h *gosocketio.Channel, args Message) {
-		fmt.Println(args)
-		fmt.Println(fmt.Sprintf("%v", args))
 
 		if args.Invoice != "" {
-			log.Println("Data Invoice ", args.Invoice)
-			log.Println("Data Status : ", args.Status)
-
+			if args.Status == "0" {
+				args.Status = "PAID"
+			}
 			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
 			_, err := databaseConnection.Query(sql, args.Status, args.Invoice)
+
+			if err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
+			_, err := databaseConnection.Query(sql, "SUSPECT", args.Invoice)
 
 			if err != nil {
 				fmt.Println(err)
@@ -266,7 +271,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 			go func() {
 				setInterval(func() {
 					fmt.Println("Checking for channeling")
-				}, 10000, true, fmt.Sprintf("%v", c["invoiceId"]), connection)
+				}, 500, true, fmt.Sprintf("%v", c["invoiceId"]), connection)
 			}()
 
 		} else {
