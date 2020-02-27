@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"proto-parking-services/pkg/services/api/v1/global"
-	"runtime"
 	"strconv"
 	"time"
 
@@ -43,6 +42,13 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 
 	ticker := time.NewTicker(interval)
 	clear := make(chan bool)
+	c, err := gosocketio.Dial(
+		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
+		transport.GetDefaultWebsocketTransport())
+
+	if err != nil {
+		log.Fatal("Error 1: ", err)
+	}
 
 	go func() {
 		for {
@@ -50,7 +56,7 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 			select {
 			case <-ticker.C:
 				if async {
-					go getDataFromChannel(invoice, connection)
+					go getDataFromChannel(invoice, connection, c)
 				} else {
 					someFunc()
 				}
@@ -66,21 +72,11 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 
 }
 
-func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
-
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	c, err := gosocketio.Dial(
-		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
-		transport.GetDefaultWebsocketTransport())
-
-	if err != nil {
-		log.Fatal("Error 1: ", err)
-	}
+func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketio.Client) bool {
 
 	fmt.Println("Listening to channel: ", channel)
 
-	err = c.On(channel, func(h *gosocketio.Channel, args Message) {
+	err := c.On(channel, func(h *gosocketio.Channel, args Message) {
 
 		if args.Invoice != "" {
 			if args.Status == "0" {
