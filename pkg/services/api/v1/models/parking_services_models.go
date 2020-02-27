@@ -39,6 +39,7 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 	// How often to fire the passed in function
 	// in milliseconds
 	interval := time.Duration(milliseconds) * time.Millisecond
+	x := false
 
 	ticker := time.NewTicker(interval)
 	clear := make(chan bool)
@@ -52,11 +53,16 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 
 	go func() {
 		for {
-
 			select {
 			case <-ticker.C:
 				if async {
-					go getDataFromChannel(invoice, connection, c)
+					go func() {
+						x = getDataFromChannel(invoice, connection, c)
+					}()
+
+					if x == true {
+						ticker.Stop()
+					}
 				} else {
 					someFunc()
 				}
@@ -75,6 +81,7 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketio.Client) bool {
 
 	fmt.Println("Listening to channel: ", channel)
+	data := false
 
 	err := c.On(channel, func(h *gosocketio.Channel, args Message) {
 
@@ -97,6 +104,8 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketi
 			if err != nil {
 				fmt.Println(err)
 			}
+
+			data = true
 		}
 	})
 	if err != nil {
@@ -110,7 +119,11 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketi
 		log.Fatal(err)
 	}
 
-	return true
+	if data == true {
+		return true
+	} else {
+		return false
+	}
 }
 
 // Function initialization
