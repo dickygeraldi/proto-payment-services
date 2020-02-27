@@ -36,16 +36,6 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 	// How often to fire the passed in function
 	// in milliseconds
 	interval := time.Duration(milliseconds) * time.Millisecond
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	c, err := gosocketio.Dial(
-		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
-		transport.GetDefaultWebsocketTransport())
-
-	if err != nil {
-		log.Fatal("Error 1: ", err)
-	}
-	defer c.Close()
 
 	ticker := time.NewTicker(interval)
 	clear := make(chan bool)
@@ -56,7 +46,7 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 			select {
 			case <-ticker.C:
 				if async {
-					go getDataFromChannel(invoice, connection, c)
+					go getDataFromChannel(invoice, connection)
 				} else {
 					someFunc()
 				}
@@ -72,11 +62,21 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 
 }
 
-func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketio.Client) bool {
+func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	c, err := gosocketio.Dial(
+		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
+		transport.GetDefaultWebsocketTransport())
+
+	if err != nil {
+		log.Fatal("Error 1: ", err)
+	}
 
 	fmt.Println("Listening to channel: ", channel)
 
-	err := c.On(channel, func(h *gosocketio.Channel, data interface{}) {
+	err = c.On(channel, func(h *gosocketio.Channel, data interface{}) {
 		fmt.Println(data)
 	})
 	if err != nil {
@@ -90,13 +90,6 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketi
 		log.Fatal(err)
 	}
 
-	res, err := c.Ack("join", channel, time.Second*3)
-
-	if err != nil {
-		log.Printf("error: %v", err)
-	} else {
-		log.Printf("result %q", res)
-	}
 	// fmt.Println("Get Listening Channel")
 	// fmt.Println(args)
 	// fmt.Println(fmt.Sprintf("%v", args))
@@ -114,6 +107,33 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB, c *gosocketi
 	// }
 
 	c.Close()
+
+	c2, err := gosocketio.Dial(
+		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
+		transport.GetDefaultWebsocketTransport())
+
+	if err != nil {
+		log.Fatal("Error 1: ", err)
+	}
+
+	fmt.Println("Listening to channel: ", channel)
+
+	err = c2.On(channel, func(h *gosocketio.Channel, data interface{}) {
+		fmt.Println(data)
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = c2.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
+		log.Println("Connected")
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c2.Close()
+
 	return true
 }
 
