@@ -50,12 +50,13 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 			case <-ticker.C:
 				if async {
 					go func() {
-						x = getDataFromChannel(invoice, connection)
-					}()
+						flagging := false
+						x, flagging = getDataFromChannel(invoice, connection, flagging)
 
-					if x == true {
-						ticker.Stop()
-					}
+						if x == true {
+							ticker.Stop()
+						}
+					}()
 				} else {
 					someFunc()
 				}
@@ -71,7 +72,7 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 
 }
 
-func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
+func getDataFromChannel(channel string, databaseConnection *sql.DB, flagging bool) (bool, bool) {
 	c, err := gosocketio.Dial(
 		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
 		transport.GetDefaultWebsocketTransport())
@@ -83,39 +84,34 @@ func getDataFromChannel(channel string, databaseConnection *sql.DB) bool {
 	fmt.Println("Listening to channel: ", channel)
 	data := false
 
-	err = c.On(channel, func(h *gosocketio.Channel, args Message) {
+	if flagging == false {
+		err = c.On(channel, func(h *gosocketio.Channel, args Message) {
 
-		if args.Invoice != "" {
-			if args.Status == "0" {
-				args.Status = "PAID"
+			if args.Invoice != "" {
+				if args.Status == "0" {
+					args.Status = "PAID"
+				}
+				sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
+				_, err := databaseConnection.Query(sql, args.Status, args.Invoice)
+
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				c.Close()
+
+				data = true
 			}
-			sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
-			_, err := databaseConnection.Query(sql, args.Status, args.Invoice)
-
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			c.Close()
-
-			data = true
+		})
+		if err != nil {
+			log.Fatal(err)
 		}
-	})
-	if err != nil {
-		log.Fatal(err)
 	}
 
-	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
-		log.Println("Connected")
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if data == true {
-		return true
+	if data == true || flagging == true {
+		return true, true
 	} else {
-		return false
+		return false, false
 	}
 }
 
