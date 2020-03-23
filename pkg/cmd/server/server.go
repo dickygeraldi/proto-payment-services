@@ -31,7 +31,7 @@ func RunServer() error {
 	postPass := os.Getenv("POSTGRESQL_PASS")
 	postPort := os.Getenv("POSTGRESQL_PORT")
 
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", postUrl, postPort, postUser, postPass, postDb)
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=required", postUrl, postPort, postUser, postPass, postDb)
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {

@@ -88,7 +88,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1RegisterParkingRequest"
+              "$ref": "#/definitions/v1ValidationParkingRequest"
             }
           }
         ],
@@ -196,6 +196,20 @@
           "type": "string"
         },
         "invoicrId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ValidationParkingRequest": {
+      "type": "object",
+      "properties": {
+        "api": {
+          "type": "string"
+        },
+        "platNo": {
+          "type": "string"
+        },
+        "merchantApiKey": {
           "type": "string"
         }
       }

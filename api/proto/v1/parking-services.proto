@@ -37,6 +37,12 @@ message RegisterParkingRequest {
     string platNo = 2;
 }
 
+message ValidationParkingRequest {
+    string api = 1;
+    string platNo = 2;
+    string merchantApiKey = 3;
+}
+
 message RegisterParkingResponse {
     string code = 1;
     string status = 2;
@@ -74,7 +80,7 @@ service ParkingServices {
         };
     }
 
-    rpc ParkingValidationServices(RegisterParkingRequest) returns (ValidationParkingResponse) {
+    rpc ParkingValidationServices(ValidationParkingRequest) returns (ValidationParkingResponse) {
         option(google.api.http) = {
             post: "/v1/parking-services/validation-parking"
             body: "*"

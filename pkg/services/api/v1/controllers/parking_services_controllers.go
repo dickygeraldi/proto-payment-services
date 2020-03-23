@@ -69,7 +69,7 @@ func (s *parkingServices) RegisterParkingServices(ctx context.Context, req *v1.R
 }
 
 // Func percobaan header
-func (s *parkingServices) ParkingValidationServices(ctx context.Context, req *v1.RegisterParkingRequest) (*v1.ValidationParkingResponse, error) {
+func (s *parkingServices) ParkingValidationServices(ctx context.Context, req *v1.ValidationParkingRequest) (*v1.ValidationParkingResponse, error) {
 	timeRequest := time.Now()
 	data, _ := peer.FromContext(ctx)
 	var code, status, message, qrContent, jamMasuk, jamKeluar, totalJam, amount, invoiceId string
@@ -85,7 +85,7 @@ func (s *parkingServices) ParkingValidationServices(ctx context.Context, req *v1
 			return nil, err
 		} else {
 			status = "Transaksi berhasil di proses"
-			code, message, status, qrContent, jamMasuk, jamKeluar, totalJam, amount, invoiceId = models.ValidationParking(req.PlatNo, timeRequest, s.db, ctx)
+			code, message, status, qrContent, jamMasuk, jamKeluar, totalJam, amount, invoiceId = models.ValidationParking(req.PlatNo, req.MerchantApiKey, timeRequest, s.db, ctx)
 		}
 	}
 

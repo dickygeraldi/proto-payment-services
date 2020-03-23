@@ -178,7 +178,7 @@ func ParkingRegistration(platNo string, timeRequest time.Time, connection *sql.D
 }
 
 // Function for parking validation
-func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, status, qrContent, jamMasuk, jamKeluar, totalJam, amount, invoiceData string) {
+func ValidationParking(platNo, MerchantApiKey string, timeRequest time.Time, connection *sql.DB, ctx context.Context) (code, message, status, qrContent, jamMasuk, jamKeluar, totalJam, amount, invoiceData string) {
 	var invoiceId string
 	var timeDiff string
 	var enteredDate time.Time
@@ -219,7 +219,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 		transaksi := strconv.Itoa(nominalTransaction)
 
 		body := &global.Qren{
-			MerchantApiKey: os.Getenv("API_KEY"),
+			MerchantApiKey: MerchantApiKey,
 			InvoiceName:    invoiceId,
 			Nominal:        transaksi,
 			StaticQR:       "0",
@@ -276,7 +276,7 @@ func ValidationParking(platNo string, timeRequest time.Time, connection *sql.DB,
 			go func() {
 				setInterval(func() {
 					fmt.Println("Checking for channeling")
-				}, 500, true, fmt.Sprintf("%v", c["invoiceId"]), connection)
+				}, 100000, true, fmt.Sprintf("%v", c["invoiceId"]), connection)
 			}()
 
 		} else {

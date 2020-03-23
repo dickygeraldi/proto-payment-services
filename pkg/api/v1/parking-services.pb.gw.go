@@ -66,7 +66,7 @@ func local_request_ParkingServices_RegisterParkingServices_0(ctx context.Context
 }
 
 func request_ParkingServices_ParkingValidationServices_0(ctx context.Context, marshaler runtime.Marshaler, client ParkingServicesClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq RegisterParkingRequest
+	var protoReq ValidationParkingRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -83,7 +83,7 @@ func request_ParkingServices_ParkingValidationServices_0(ctx context.Context, ma
 }
 
 func local_request_ParkingServices_ParkingValidationServices_0(ctx context.Context, marshaler runtime.Marshaler, server ParkingServicesServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq RegisterParkingRequest
+	var protoReq ValidationParkingRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
