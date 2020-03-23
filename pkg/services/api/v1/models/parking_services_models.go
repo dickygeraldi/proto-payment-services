@@ -39,7 +39,14 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 	// How often to fire the passed in function
 	// in milliseconds
 	interval := time.Duration(milliseconds) * time.Millisecond
-	x := false
+
+	c, err := gosocketio.Dial(
+		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
+		transport.GetDefaultWebsocketTransport())
+
+	if err != nil {
+		log.Fatal("Error 1: ", err)
+	}
 
 	ticker := time.NewTicker(interval)
 	clear := make(chan bool)
@@ -50,11 +57,35 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 			case <-ticker.C:
 				if async {
 					go func() {
-						flagging := false
-						x, flagging = getDataFromChannel(invoice, connection, flagging)
+						var flagging int
+						flagging = 0
 
-						if x == true {
-							ticker.Stop()
+						if flagging == 0 {
+							err := c.On(invoice, func(h *gosocketio.Channel, args Message) {
+
+								if args.Invoice != "" {
+									fmt.Println("Update database")
+									if args.Status == "0" {
+										args.Status = "PAID"
+									}
+									sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
+									_, err := connection.Query(sql, args.Status, args.Invoice)
+
+									if err != nil {
+										log.Fatal(err)
+									}
+
+									flagging = 1
+									if flagging == 1 {
+
+										c.Close()
+										ticker.Stop()
+									}
+								}
+							})
+							if err != nil {
+								log.Fatal(err)
+							}
 						}
 					}()
 				} else {
@@ -70,50 +101,6 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 
 	return clear
 
-}
-
-func getDataFromChannel(channel string, databaseConnection *sql.DB, flagging bool) (bool, bool) {
-	c, err := gosocketio.Dial(
-		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
-		transport.GetDefaultWebsocketTransport())
-
-	if err != nil {
-		log.Fatal("Error 1: ", err)
-	}
-
-	fmt.Println("Listening to channel: ", channel)
-	data := false
-
-	if flagging == false {
-		err = c.On(channel, func(h *gosocketio.Channel, args Message) {
-
-			if args.Invoice != "" {
-				fmt.Println("Update database")
-				if args.Status == "0" {
-					args.Status = "PAID"
-				}
-				sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
-				_, err := databaseConnection.Query(sql, args.Status, args.Invoice)
-
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				c.Close()
-
-				data = true
-			}
-		})
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	if data == true || flagging == true {
-		return true, true
-	} else {
-		return false, false
-	}
 }
 
 // Function initialization
