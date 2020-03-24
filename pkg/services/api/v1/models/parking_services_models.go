@@ -266,7 +266,7 @@ func ValidationParking(platNo, MerchantApiKey string, timeRequest time.Time, con
 			go func() {
 				setInterval(func() {
 					fmt.Println("Checking for channeling")
-				}, 100000, true, invoiceIdQren, connection)
+				}, 1000, true, invoiceIdQren, connection)
 			}()
 
 		} else {
