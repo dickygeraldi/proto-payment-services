@@ -59,6 +59,7 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 					go func() {
 						var flagging int
 						flagging = 0
+						fmt.Println("Listening to socket")
 
 						if flagging == 0 {
 							err := c.On(invoice, func(h *gosocketio.Channel, args Message) {
