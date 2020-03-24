@@ -39,6 +39,7 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 	// How often to fire the passed in function
 	// in milliseconds
 	interval := time.Duration(milliseconds) * time.Millisecond
+	fmt.Println("Listening to socket")
 
 	c, err := gosocketio.Dial(
 		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
