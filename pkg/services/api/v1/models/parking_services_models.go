@@ -46,7 +46,7 @@ func setInterval(someFunc func(), milliseconds int, async bool, invoice string, 
 		transport.GetDefaultWebsocketTransport())
 
 	if err != nil {
-		log.Fatal("Error 1: ", err)
+		log.Printf("Error 1: ", err)
 	}
 
 	ticker := time.NewTicker(interval)
@@ -266,7 +266,7 @@ func ValidationParking(platNo, MerchantApiKey string, timeRequest time.Time, con
 			go func() {
 				setInterval(func() {
 					fmt.Println("Checking for channeling")
-				}, 100000, true, invoiceIdQren, connection)
+				}, 100, true, invoiceIdQren, connection)
 			}()
 
 		} else {
