@@ -7,16 +7,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"proto-parking-services/pkg/services/api/v1/global"
 	"strconv"
 	"time"
-
-	gosocketio "github.com/graarh/golang-socketio"
-	"github.com/graarh/golang-socketio/transport"
 )
 
 // Set global environment variable
@@ -34,77 +30,77 @@ type Channel struct {
 	Channel string `json:"channel"`
 }
 
-func setInterval(someFunc func(), milliseconds int, async bool, invoice string, connection *sql.DB) chan bool {
+// func setInterval(someFunc func(), milliseconds int, async bool, invoice string, connection *sql.DB) chan bool {
 
-	// How often to fire the passed in function
-	// in milliseconds
-	interval := time.Duration(milliseconds) * time.Millisecond
-	fmt.Println("Listening to socket ", invoice)
+// 	// How often to fire the passed in function
+// 	// in milliseconds
+// 	interval := time.Duration(milliseconds) * time.Millisecond
+// 	fmt.Println("Listening to socket ", invoice)
 
-	c, err := gosocketio.Dial(
-		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
-		transport.GetDefaultWebsocketTransport())
+// 	c, err := gosocketio.Dial(
+// 		gosocketio.GetUrl(os.Getenv("SOCKET_HOST"), 80, false),
+// 		transport.GetDefaultWebsocketTransport())
 
-	if err != nil {
-		log.Printf("Error 1: ", err)
-	}
+// 	if err != nil {
+// 		log.Fatal("Error 1: ", err)
+// 	}
 
-	ticker := time.NewTicker(interval)
-	clear := make(chan bool)
+// 	ticker := time.NewTicker(interval)
+// 	clear := make(chan bool)
+	
+// 	go func() {
+// 		for {
+// 			select {
+// 			case <-ticker.C:
+// 				if async {
+// 					go func() {
+// 						var flagging int
+// 						flagging = 0
+// 						fmt.Println("Listening to socket, ", invoice)
 
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				if async {
-					go func() {
-						var flagging int
-						flagging = 0
-						fmt.Println("Listening to socket, ", invoice)
+// 						if flagging == 0 {
+// 							err := c.On(invoice, func(h *gosocketio.Channel, args Message) {
 
-						if flagging == 0 {
-							err := c.On(invoice, func(h *gosocketio.Channel, args Message) {
+// 								fmt.Println("Listening to socket")
+// 								if args.Invoice != "" {
+// 									fmt.Println("Update database")
+// 									if args.Status == "0" {
+// 										args.Status = "PAID"
+// 									}
+// 									sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
+// 									_, err := connection.Query(sql, args.Status, args.Invoice)
 
-								fmt.Println("Listening to socket")
-								if args.Invoice != "" {
-									fmt.Println("Update database")
-									if args.Status == "0" {
-										args.Status = "PAID"
-									}
-									sql := fmt.Sprintf(`UPDATE "dataParking" set "status" = $1 where "qreninvoiceid" = $2`)
-									_, err := connection.Query(sql, args.Status, args.Invoice)
+// 									if err != nil {
+// 										log.Fatal(err)
+// 									}
 
-									if err != nil {
-										log.Fatal(err)
-									}
+// 									flagging = 1
+// 									if flagging == 1 {
 
-									flagging = 1
-									if flagging == 1 {
+// 										c.Close()
+// 										ticker.Stop()
+// 									}
+// 								}
+// 							})
+// 							if err != nil {
+// 								log.Fatal(err)
+// 							}
+// 						}
+// 					}()
+// 				} else {
+// 					someFunc()
+// 				}
+// 			case <-clear:
+// 				ticker.Stop()
+// 				return
+// 			}
 
-										c.Close()
-										ticker.Stop()
-									}
-								}
-							})
-							if err != nil {
-								log.Fatal(err)
-							}
-						}
-					}()
-				} else {
-					someFunc()
-				}
-			case <-clear:
-				ticker.Stop()
-				return
-			}
+// 		}
+// 	}()
 
-		}
-	}()
+// 	return clear
 
-	return clear
-
-}
+// }
 
 // Function initialization
 func init() {
@@ -263,11 +259,11 @@ func ValidationParking(platNo, MerchantApiKey string, timeRequest time.Time, con
 				}
 			}()
 
-			go func() {
-				setInterval(func() {
-					fmt.Println("Checking for channeling")
-				}, 100, true, invoiceIdQren, connection)
-			}()
+// 			go func() {
+// 				setInterval(func() {
+// 					fmt.Println("Checking for channeling")
+// 				}, 100, true, invoiceIdQren, connection)
+// 			}()
 
 		} else {
 			code = "10"
