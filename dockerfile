@@ -1,4 +1,8 @@
-FROM golang:latest as builder
+FROM golang:alpine as builder
+
+LABEL maintainer="dickygeraldi@gmail.com"
+
+RUN apk update && apk add --no-cache git
 
 WORKDIR /app
 
@@ -17,5 +21,9 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
 COPY --from=builder /app/main .
+
+COPY --from=builder /app/.env .  
+
+EXPOSE 9091
 
 CMD ["./main"]
