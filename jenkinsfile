@@ -1,0 +1,121 @@
+pipeline{
+  environment {
+    scannerHome = tool 'SonarQubeScanner'
+    registry = "<<user-registery>>/<<repository name>>"
+    registryCredential = 'dockerhub'
+    dockerImage = ''
+    GO111MODULE = 'on'
+  }
+  agent any
+  tools {
+    go 'go'
+    dockerTool 'docker'
+  }
+    stages {
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+                script {
+                    echo "get COMMIT_ID"
+                    sh 'echo -n $(git rev-parse --short HEAD) > ./commit-id'
+                    commitId = readFile('./commit-id')
+                }
+                stash(name: 'ws', includes:'**,./commit-id') // stash this current workspace
+        }   }
+
+        stage('Initialize') {
+            steps {
+                script{
+                    if ( env.BRANCH_NAME == 'master' ){
+                        envStage = "proto-payment-services-production"
+                    } else if ( env.BRANCH_NAME == 'release' ){
+                        envStage = "proto-payment-services-staging"
+                    } else if ( env.BRANCH_NAME == 'develop'){
+                        envStage = "proto-payment-services-development"
+                    }   
+                }
+            }
+        }
+        stage('Sonarqube & analysis') {
+            steps {
+              script {
+                  withSonarQubeEnv('sonarqube') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                  }
+               }
+          }
+        stage("SonarQube Quality Gate"){
+          steps {
+            script {
+               timeout(time: 5, unit: 'MINUTES') { 
+               def qualitygate = waitForQualityGate()
+               echo "${qualitygate.status}"
+               if (qualitygate.status != 'OK') {
+                    abortPipeline:true
+                    echo "Pipeline aborted due to quality gate failure:   ${qualitygate.status}"
+                 }
+               else {
+                    echo "Quality gate passed"
+                  }
+              }
+           }
+         }
+       }
+        stage('Building image') {
+            steps{
+                script {
+                  dockerImage = docker.build registry + ":${BUILD_NUMBER}"
+                }
+             }
+          }
+          stage('Push Image') {
+              steps{
+                  script {
+                        sh "docker --version"
+                        docker.withRegistry( 'https://registry.hub.docker.com', registryCredential ) { c ->
+                            dockerImage.push("${env.BUILD_ID}")
+                      }
+                  }
+              }
+            }
+        stage('Deploy to kubernetes') {
+            steps {
+                sh "kubectl apply -f deployment.yml --namespace=${envStage}"
+                sh "kubectl apply -f services.yml --namespace=${envStage}"
+                sh "kubectl set image deployment/user-services user-services=${registry}:${BUILD_NUMBER} --record --namespace=${envStage}"
+            }
+        }
+
+        stage('Remove Unused docker image') {
+            steps {
+                sh "docker rmi $registry:$BUILD_NUMBER"
+            }
+        }    
+  }
+  // post {
+  //   success {
+  //     print 'Job completed successfully.'
+  //     sh "docker rmi -f ${image.id}"
+  //   }
+  //   failure {
+  //     print 'Job failed.'
+  //     // notify slack and email on failure
+  //     slackSend(
+  //       channel: '<my-slack-channel>',
+  //       color:   'warning',
+  //       message: "Job failed for ${env.JOB_NAME}/${env.JOB_NAME} at ${env.JOB_URL}."
+  //     )
+  //     mail(
+  //       to:      '<my-report-email>',
+  //       subject: "Failure: ${env.BUILD_TAG}",
+  //       body:    "Job failed for ${env.JOB_NAME}/${env.JOB_NAME} at ${env.JOB_URL}."
+  //     )
+  //   }
+  //   always {
+  //     // remove built docker image and prune system
+  //     print 'Cleaning up the Docker system.'
+  //     sh 'docker system prune -f'
+  //   }
+  // }
+}
